@@ -1,6 +1,7 @@
 from lxml import html
-from config import url_words, url_host, logger_file_name
+from config import url_words, url_host
 from datetime import datetime
+from logger import logger
 import pandas as pd
 import warnings
 import os
@@ -30,6 +31,7 @@ if response.status == 200:
     if main_container:
         current_date = datetime.now().date()
         table = main_container.find_class(WORDS_TABLE_CLASS)
+        logger.info('Table with words found')
         if table:
             for k in range(1, WORDS_LIST_LIMIT):
                 try:
@@ -39,18 +41,32 @@ if response.status == 200:
                     df.at[k, 'english'] = english
                 except IndexError:
                     try:
-                        # TODO: add loger info about saving status, new words number
                         df_original = pd.read_csv(WORDS_LIST_PATH)
                         df = pd.concat([df_original, df])
                         df[WORDS_LIST_DOWNLOAD_DATE] = None
                         duplicated_rows = df.duplicated(keep=False)
                         df_new_words = df.drop(duplicated_rows[duplicated_rows].index)
+                        new_words_number = df_new_words.shape[0]
+                        if new_words_number == 0:
+                            logger.info('No new words')
+                            break
+                        else:
+                            logger.info(f' {datetime.now().strftime("%m/%d/%Y, %H:%M:%S")} - '
+                                        f'{new_words_number} words downloaded')
                         df_old_words = df.drop(duplicated_rows[~duplicated_rows].index)
                         df_new_words[WORDS_LIST_DOWNLOAD_DATE] = current_date
                         df = pd.concat([df_old_words, df_new_words])
                         df.to_csv(WORDS_LIST_PATH, index=False)
+                        logger.info(f'Newly downloaded words appended into {WORDS_LIST_FILE_NAME}')
                         break
                     except FileNotFoundError:
                         df[WORDS_LIST_DOWNLOAD_DATE] = current_date
                         df.to_csv(WORDS_LIST_PATH, index=False)
+                        logger.info(f'{WORDS_LIST_FILE_NAME} file created')
                         break
+        else:
+            logger.error('Table with words not found')
+else:
+    logger.error(f'No connection with {url_host}. Response code {response.status}')
+logger.info('The program finished successfully')
+logger.info('-----------------------------------------')
