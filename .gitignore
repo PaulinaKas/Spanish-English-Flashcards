@@ -1,4 +1,7 @@
 .venv/
 .idea/
 __pycache__/
+words_list/
+
 config.py
+logs.log
