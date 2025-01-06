@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 from datetime import datetime
+from types import NoneType
+import pandas as pd
+
 
 @dataclass
 class Word:
     _english: str
     _spanish: str
-    _entry_date: datetime
+    _entry_date: datetime = None
     _part_of_speech: str = None
     _category: str = None
     _repetition_date: datetime = None
@@ -32,8 +35,11 @@ class Word:
         return self._entry_date
 
     @entry_date.setter
-    def entry_date(self, value: datetime) -> None:
-        self._entry_date = value
+    def entry_date(self, value: datetime or str) -> None:
+        if isinstance(value, datetime):
+            self._entry_date = value
+        elif isinstance(value, str):
+            self._entry_date = datetime.strptime(value, '%Y-%m-%d')
 
     @property
     def category(self) -> str:
