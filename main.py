@@ -1,5 +1,5 @@
 import words_downloader as downloader
-import text_to_spech as speech
+import text_to_speech as speech
 
 def main():
     # words_df = downloader.download_from_html()

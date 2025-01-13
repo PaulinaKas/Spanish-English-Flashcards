@@ -1,5 +1,6 @@
 from lxml import html
 import config
+import re
 from datetime import datetime
 from logger import logger
 from word import Word
@@ -30,6 +31,8 @@ def download_from_html() -> pd.DataFrame:
             current_date = datetime.now().date()
             table = main_container.find_class(WORDS_TABLE_CLASS)
             logger.info('Table with words found')
+            invalid_chars_1 = r'[<>:"\\|?*]'
+            invalid_chars_2 = r'/'
             if table:
                 for k in range(1, WORDS_LIST_LIMIT):
                     try:
@@ -37,6 +40,8 @@ def download_from_html() -> pd.DataFrame:
                         tree.xpath(f'/html/body/div/div/div[1]/div/div[1]/div[3]/div[{k}]/div/div[4]/a/div[1]')[0].text
                         english = \
                         tree.xpath(f'/html/body/div/div/div[1]/div/div[1]/div[3]/div[{k}]/div/div[4]/a/div[2]')[0].text
+                        spanish = re.sub(invalid_chars_1, '', spanish)
+                        spanish = re.sub(invalid_chars_2, ' ', spanish)
                         df.at[k, 'spanish'] = spanish
                         df.at[k, 'english'] = english
                     except IndexError:

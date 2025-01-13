@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import re
 import config
 from gtts import gTTS
 
@@ -22,8 +23,15 @@ def generate_mp3_files(domain: str = 'es') -> None: # com.mx - mexico, es - spai
             mp3_filename = os.path.join(output_folder,  f'{word}.mp3')
             try:
                 tts.save(mp3_filename)
+                print(f'{percent_lvl}% Saved: {mp3_filename}')
             except OSError:
-                mp3_filename = mp3_filename.replace('', '_')
-            print(f'{percent_lvl}% Saved: {mp3_filename}')
+                invalid_chars = r'[<>:"\\|?*]'
+                cleaned_word = re.sub(invalid_chars, '', word)
+                invalid_chars = r'/'
+                cleaned_word = re.sub(invalid_chars, ' ', cleaned_word)
+                mp3_filename = os.path.join(output_folder, f'{cleaned_word}.mp3')
+                tts.save(mp3_filename)
+                print(f'**************************{word}**************************')
+                print(f'{percent_lvl}% Saved: {mp3_filename}')
 
     print('All files have been saved.')

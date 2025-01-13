@@ -2,6 +2,7 @@
 .idea/
 __pycache__/
 words_list/
+speech_mp3
 
 config.py
 logs.log
