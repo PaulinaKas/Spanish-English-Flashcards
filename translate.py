@@ -4,7 +4,7 @@ from diki_translate import Diki
 from collections import Counter
 from Levenshtein import distance
 
-def translate_to_polish() -> [str]:
+def translate_to_polish() -> None:
     filename = config.words_with_categories_list_path
     diki_eng = Diki('english')
     diki_spa = Diki('spanish')
@@ -47,6 +47,9 @@ def translate_to_polish() -> [str]:
                 common_translations = list(count.keys())
                 df.at[k, 'to_manual_check'] = 1
 
+        if len(common_translations[0]) == 0:
+            pass # TODO: find translations for these cases
+
         try:
             df.at[k, 'polish'] = common_translations[0]
             k += 1
@@ -55,7 +58,7 @@ def translate_to_polish() -> [str]:
         percentage = round(k / df.shape[0]*100,1)
         print(f'{percentage}% translated')
 
-    df.to_csv(filename, index=False)
+    df.to_csv(f'1_{filename}', index=False)
 
 def get_most_similar_words(word_1: str, word_2: str, target: str) -> str:
     distance_word_1 = distance(word_1, target)
