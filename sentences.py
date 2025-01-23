@@ -11,8 +11,8 @@ def get_words_to_create_sentence() -> [str]:
     df_raw = pd.read_csv(all_words_path)
     df = df_raw[['spanish', 'english', 'category']]
 
-    get_new_random_word(df, 'noun', 'people')
-    a = df
+    series_noun = get_new_random_word(df, 'noun', 'clothes')
+    noun_spanish = series_noun['spanish'].values[0]
 
 def process_sentences():
     words = get_words_to_create_sentence()
@@ -25,20 +25,24 @@ def get_all_categories(df: pd.DataFrame, pos: str) -> [str]:
     return list(result['category'].unique())
 
 
-def get_new_random_word(df: pd.DataFrame, pos: str, subset_condition: str) -> pd.DataFrame:
+def get_new_random_word(df: pd.DataFrame, pos: str, subset_condition: str) -> pd.Series:
     categories = get_all_categories(df, pos) # verb, adjective, noun
 
     if subset_condition == 'people':
         selected_category = [i for i in categories if subset_condition in i]
+    elif subset_condition == 'clothes':
+        selected_category = [i for i in categories if subset_condition in i]
     else:
         return
 
+    if len(selected_category) == 1:
+        selected_category = selected_category[0]
+    else:
+        pass
     df = df[df['category'] == selected_category]
+    sample = df.sample(1)
 
-    return df
-
-
-
+    return sample
 
 
 
