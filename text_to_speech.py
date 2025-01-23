@@ -8,12 +8,13 @@ words = config.words_list_path
 
 column_name = 'spanish'
 
-def generate_mp3_files(domain: str = 'es') -> None: # com.mx - mexico, es - spain
+def generate_mp3_files(date: str, domain: str = 'es') -> None: # com.mx - mexico, es - spain
     output_folder = config.speech_folder
     output_folder = os.path.join(output_folder, domain)
     os.makedirs(output_folder, exist_ok=True)
 
     df = pd.read_csv(words)
+    df = df[df['date']==date]
 
     for index, row in df.iterrows():
         word = str(row[column_name]).strip()
