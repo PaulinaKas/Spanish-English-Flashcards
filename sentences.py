@@ -7,15 +7,16 @@ all_words_path = config.words_with_categories_list_path
 def create_sentence_in_spanish(words):
     generator = pipeline("text-generation", model='')
 
-def get_words_to_create_sentence() -> [str]:
+def get_words_to_create_sentence(condition: str) -> [str]:
     df_raw = pd.read_csv(all_words_path)
     df = df_raw[['spanish', 'english', 'category']]
 
-    series_noun = get_new_random_word(df, 'noun', 'clothes')
+    series_noun = get_new_random_word(df, 'noun', condition)
     noun_spanish = series_noun['spanish'].values[0]
+    a = df
 
-def process_sentences():
-    words = get_words_to_create_sentence()
+def process_sentences(condition: str):
+    words = get_words_to_create_sentence(condition)
     exit()
     create_sentence_in_spanish(words)
 
@@ -44,11 +45,3 @@ def get_new_random_word(df: pd.DataFrame, pos: str, subset_condition: str) -> pd
 
     return sample
 
-
-
-process_sentences()
-
-words = input("Introduce palabras en español separadas por comas: ").split(',')
-words = [word.strip() for word in words]
-result = create_sentence_in_spanish(words)
-print("Oración generada:", result)
