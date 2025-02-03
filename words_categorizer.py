@@ -13,6 +13,7 @@ def categorize_words():
     df = pd.read_csv(config.words_with_categories_list_path)
     df = df[['spanish', 'english', 'category']]
     df['category'] = df['category'].str.replace('_', ' ')
+    analyze_categories(df)
     df_predictions_spanish, accuracy_spanish = predict_categories_by_language(df, 'spanish')
     df_predictions_english, accuracy_english = predict_categories_by_language(df, 'english')
 
@@ -29,11 +30,11 @@ def predict_categories_by_language(df: pd.DataFrame, language: str) -> (pd.DataF
                                                             test_size=0.1, random_state=42, stratify=stratify)
     except ValueError:
         # train / test groups have not enough elements
-        df = df.groupby('category').filter(lambda x: len(x) > 1)
+        df = df.groupby('category').filter(lambda x: len(x) > 20)
         stratify = df['category']
         X_train, X_test, y_train, y_test = train_test_split(df[language], df['category'],
                                                             test_size=0.1, random_state=42, stratify=stratify)
-        stratified = y_train.value_counts()
+        stratified = round(y_train.value_counts()/y_train.size*100,2)
 
     model = make_pipeline(TfidfVectorizer(), MultinomialNB())
     model.fit(X_train, y_train)
@@ -68,5 +69,27 @@ def is_labels_distribution_equal(df: pd.DataFrame) -> bool:
 
     return is_equally_distributed
 
+
+def analyze_categories(df: pd.DataFrame):
+    ''' verbs '''
+    all_verbs_size = df[df['category'].str.startswith('verb')].shape[0]
+    verbs_to_size = df[df['english'].str.startswith('to ') & df['category'].str.startswith('verb')].shape[0]
+    verbs_not_to_size = df[~df['english'].str.startswith('to ') & df['category'].str.startswith('verb')].shape[0]
+    # verbs always starts with 'to ' in english
+
+    verbs = df[df['category'].str.startswith('verb')]
+    unique_verbs_categories = verbs['category'].value_counts()
+    verbs_tener = df[df['category'].str.startswith('verb') & df[df['spanish'].str.startswith('tener')]]
+    # in verbs category there are only 2 subcategories:
+    # verb + tener (where spanish starts with 'tengo')
+    # verb (where spanish doesnt starts with 'tengo')
+
+
+    ''' nouns '''
+    # nouns usually starts with one of [el, la, los, las]
+    df_nouns = df[df['category'].str.startswith('noun')]
+
+
+    print(1)
 
 
