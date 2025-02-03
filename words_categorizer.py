@@ -1,5 +1,6 @@
 import config
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -18,9 +19,21 @@ def categorize_words():
     print(1)
 
 def predict_categories_by_language(df: pd.DataFrame, language: str) -> (pd.DataFrame, float):
-    create_train_test_sets(df)
-    X_train, X_test, y_train, y_test = train_test_split(df[language], df['category'],
-                                                        test_size=0.1, random_state=42)
+    labels_balanced = is_labels_distribution_equal(df)
+    if not labels_balanced:
+        stratify = df['category']
+    else:
+        stratify = None
+    try:
+        X_train, X_test, y_train, y_test = train_test_split(df[language], df['category'],
+                                                            test_size=0.1, random_state=42, stratify=stratify)
+    except ValueError:
+        # train / test groups have not enough elements
+        df = df.groupby('category').filter(lambda x: len(x) > 1)
+        stratify = df['category']
+        X_train, X_test, y_train, y_test = train_test_split(df[language], df['category'],
+                                                            test_size=0.1, random_state=42, stratify=stratify)
+        stratified = y_train.value_counts()
 
     model = make_pipeline(TfidfVectorizer(), MultinomialNB())
     model.fit(X_train, y_train)
@@ -35,7 +48,7 @@ def predict_categories_by_language(df: pd.DataFrame, language: str) -> (pd.DataF
     return df_outcome, accuracy
 
 
-def create_train_test_sets(df: pd.DataFrame) -> dict:
+def is_labels_distribution_equal(df: pd.DataFrame) -> bool:
     category_counts = dict(Counter(df['category']))
     plt.figure(figsize=(12, 6))
     bars = plt.barh(list(category_counts.keys()), list(category_counts.values()), color='skyblue')
@@ -45,10 +58,15 @@ def create_train_test_sets(df: pd.DataFrame) -> dict:
     plt.ylabel('Categories')
     plt.title('Distribution of labels')
     plt.tight_layout()
-    plt.show()
+    # plt.show()
     plt.savefig(config.labels_distribution, dpi=300, bbox_inches='tight')
 
-    return category_counts
+    counts = np.array(list(category_counts.values()))
+    mean_count = np.mean(counts)
+    threshold = 0.1 * mean_count
+    is_equally_distributed = np.all(np.abs(counts - mean_count) <= threshold)
+
+    return is_equally_distributed
 
 
 
