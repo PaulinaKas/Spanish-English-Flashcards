@@ -13,13 +13,16 @@ def categorize_words():
     df = pd.read_csv(config.words_with_categories_list_path)
     df = df[['spanish', 'english', 'category']]
     df['category'] = df['category'].str.replace('_', ' ')
-    analyze_categories(df)
-    df_predictions_spanish, accuracy_spanish = predict_categories_by_language(df, 'spanish')
-    df_predictions_english, accuracy_english = predict_categories_by_language(df, 'english')
+    # analyze_categories(df)
+    df_predictions_spanish, accuracy_spanish = predict_categories_by_language(df, 'spanish', category = 'verb')
+    df_predictions_english, accuracy_english = predict_categories_by_language(df, 'english', category = 'verb')
 
     print(1)
 
-def predict_categories_by_language(df: pd.DataFrame, language: str) -> (pd.DataFrame, float):
+def predict_categories_by_language(df: pd.DataFrame, language: str, category: str = None) -> (pd.DataFrame, float):
+    if category == 'verb':
+        df = df[df['category'].str.startswith('verb')]
+        # TODO return predictions based on 'to ' and 'tener ...'
     labels_balanced = is_labels_distribution_equal(df)
     if not labels_balanced:
         stratify = df['category']
@@ -30,7 +33,7 @@ def predict_categories_by_language(df: pd.DataFrame, language: str) -> (pd.DataF
                                                             test_size=0.1, random_state=42, stratify=stratify)
     except ValueError:
         # train / test groups have not enough elements
-        df = df.groupby('category').filter(lambda x: len(x) > 20)
+        df = df.groupby('category').filter(lambda x: len(x) > 3)
         stratify = df['category']
         X_train, X_test, y_train, y_test = train_test_split(df[language], df['category'],
                                                             test_size=0.1, random_state=42, stratify=stratify)
@@ -81,8 +84,8 @@ def analyze_categories(df: pd.DataFrame):
     unique_verbs_categories = verbs['category'].value_counts()
     verbs_tener = df[df['category'].str.startswith('verb') & df[df['spanish'].str.startswith('tener')]]
     # in verbs category there are only 2 subcategories:
-    # verb + tener (where spanish starts with 'tengo')
-    # verb (where spanish doesnt starts with 'tengo')
+    # verb + tener (where spanish starts with 'tener')
+    # verb (where spanish doesnt starts with 'tener')
 
 
     ''' nouns '''
