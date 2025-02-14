@@ -35,4 +35,25 @@ def generate_mp3_files(date: str, domain: str = 'es') -> None: # com.mx - mexico
                 print(f'**************************{word}**************************')
                 print(f'{percent_lvl}% Saved: {mp3_filename}')
 
-    print('All files have been saved.')
+    print('All mp3 files have been saved.')
+
+    fill_in_mp3_column(df, date)
+
+
+def fill_in_mp3_column(df: pd.DataFrame, date: str):
+    for index, row in df.iterrows():
+        date_col = row['date']
+        if date_col == date:
+            spanish_col = row['spanish']
+
+            invalid_chars = r'[<>:"\\|?*]'
+            cleaned_mp3_col = re.sub(invalid_chars, '', spanish_col)
+            invalid_chars = r'/'
+            cleaned_mp3_col = re.sub(invalid_chars, ' ', cleaned_mp3_col)
+            mp3_col = f'{spanish_col}[sound:{cleaned_mp3_col}.mp3]'
+
+            df.at[index, 'mp3'] = mp3_col
+
+    df.to_csv(words, index=False)
+
+
