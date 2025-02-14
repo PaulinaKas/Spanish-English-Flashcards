@@ -46,7 +46,7 @@ def download_from_html() -> pd.DataFrame:
                         df.at[k, 'english'] = english
                     except IndexError:
                         try:
-                            df_original = pd.read_csv(config.words_list_path)
+                            df_original = pd.read_csv(config.words_with_categories_list_path)
                             df[WORDS_LIST_DOWNLOAD_DATE] = None
                             df = pd.concat([df_original, df])
                             df.reset_index(inplace=True, drop=True)
@@ -63,20 +63,20 @@ def download_from_html() -> pd.DataFrame:
                             df_old_words.drop_duplicates(subset=['spanish', 'english'], inplace=True, keep='first')
                             df_new_words[WORDS_LIST_DOWNLOAD_DATE] = current_date
                             df = pd.concat([df_old_words, df_new_words])
-                            df.to_csv(config.words_list_path, index=False)
+                            df.to_csv(config.words_with_categories_list_file_name, index=False)
                             logger.info(f'Newly downloaded words appended into {config.words_list_file_name}')
                             return df
                         except FileNotFoundError:
                             df[WORDS_LIST_DOWNLOAD_DATE] = current_date
-                            df.to_csv(config.words_list_path, index=False)
-                            logger.info(f'{config.words_list_file_name} file created')
+                            df.to_csv(config.words_with_categories_list_path, index=False)
+                            logger.info(f'{config.words_with_categories_list_file_name} file created')
                             return df
             else:
                 logger.error('Table with words not found')
     else:
         logger.error(f'No connection with {config.url_host}. Response code {response.status}')
         try:
-            df_original = pd.read_csv(config.words_list_path)
+            df_original = pd.read_csv(config.words_with_categories_list_path)
             return df_original
         except FileNotFoundError:
             return df

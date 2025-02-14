@@ -4,7 +4,7 @@ import re
 import config
 from gtts import gTTS
 
-words = config.words_list_path
+words = config.words_with_categories_list_path
 
 column_name = 'spanish'
 
